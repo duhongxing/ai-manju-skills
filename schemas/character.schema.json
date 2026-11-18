@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "character_id",
+    "master_version",
+    "dna",
+    "views",
+    "master_file"
+  ],
+  "properties": {
+    "character_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "master_version": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "dna": {
+      "type": "object",
+      "minProperties": 1
+    },
+    "views": {
+      "type": "object",
+      "required": [
+        "front",
+        "side",
+        "back"
+      ],
+      "properties": {
+        "front": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "side": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "back": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        }
+      },
+      "additionalProperties": false
+    },
+    "master_file": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "generation_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "asset_file",
+          "master_version",
+          "status"
+        ],
+        "properties": {
+          "asset_file": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "master_version": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "model": {
+            "type": "string"
+          },
+          "prompt_version": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "not_generated",
+              "generated",
+              "review_pending",
+              "approved",
+              "rejected"
+            ]
+          },
+          "review_notes": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

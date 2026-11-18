@@ -1,0 +1,68 @@
+name: Continuity v2 checks
+on:
+  pull_request:
+    paths:
+      - 'schemas/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'examples/**'
+      - 'skills/**'
+      - '.github/workflows/continuity-v2.yml'
+  push:
+    branches:
+      - 'feature/continuity-v2'
+jobs:
+  metadata-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install JSON Schema validator
+        run: python -m pip install 'jsonschema>=4,<5'
+      - name: Validate sample against JSON Schema
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from jsonschema import Draft202012Validator
+          schema=json.loads(Path('schemas/shot.schema.json').read_text())
+          Draft202012Validator.check_schema(schema)
+          data=json.loads(Path('examples/mie-men-zhi-ye/shots.json').read_text())
+          Draft202012Validator(schema).validate(data)
+          print('PASS: JSON Schema')
+          PY
+      - name: Validate character example and schema
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from jsonschema import Draft202012Validator
+          from scripts.validate_character import validate_character
+          data=json.loads(Path('examples/mie-men-zhi-ye/character.json').read_text(encoding='utf-8'))
+          schema=json.loads(Path('schemas/character.schema.json').read_text(encoding='utf-8'))
+          Draft202012Validator(schema).validate(data)
+          assert validate_character(data)==[], validate_character(data)
+          print('PASS: character asset metadata only')
+          PY
+      - name: Character asset reference tests
+        run: python -m unittest discover -s tests -p 'test_character.py' -v
+      - name: Unit tests
+        run: python -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Sample continuity validation
+        run: python scripts/validate_continuity.py examples/mie-men-zhi-ye/shots.json
+      - name: Ensure all 21 skills use independent views
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          files=list(Path('skills').glob('*/SKILL.md'))
+          assert len(files)==21, f'Expected 21 skills, found {len(files)}'
+          for f in files:
+              s=f.read_text(encoding='utf-8')
+              assert '三视图（正面、侧面、背面同排等距排列）' not in s, str(f)
+              assert '独立' in s and ('不得拼图' in s or '禁止三视图拼图' in s), str(f)
+          print('PASS: 21 genre templates')
+          PY

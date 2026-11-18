@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "prop_id",
+    "state",
+    "location"
+  ],
+  "properties": {
+    "prop_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "state": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "holder": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "transition_action": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    }
+  },
+  "additionalProperties": false
+}

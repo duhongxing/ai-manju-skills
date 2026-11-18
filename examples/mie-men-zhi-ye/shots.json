@@ -1,0 +1,38 @@
+{
+  "project_id": "mie-men-zhi-ye",
+  "character_id": "SC-LI-001",
+  "master_version": "v1",
+  "aspect_ratio": "16:9",
+  "shots": [
+    {
+      "id": "S01",
+      "start": 0,
+      "end": 3,
+      "sword_state": "sheathed",
+      "scabbard_location": "left_waist",
+      "character_id": "SC-LI-001",
+      "master_version": "v1",
+      "image_file": "S01.png"
+    },
+    {
+      "id": "S02",
+      "start": 3,
+      "end": 6,
+      "sword_state": "partially_drawn",
+      "scabbard_location": "left_waist",
+      "character_id": "SC-LI-001",
+      "master_version": "v1",
+      "image_file": "S02.png"
+    },
+    {
+      "id": "S03",
+      "start": 6,
+      "end": 9,
+      "sword_state": "drawn",
+      "scabbard_location": "left_waist",
+      "character_id": "SC-LI-001",
+      "master_version": "v1",
+      "image_file": "S03.png"
+    }
+  ]
+}
