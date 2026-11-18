@@ -36,7 +36,7 @@ jobs:
           print('PASS: JSON Schema')
           PY
       - name: Unit tests
-        run: python -m unittest discover -s tests -v
+        run: python -m unittest discover -s tests -p 'test_*.py' -v
       - name: Sample continuity validation
         run: python scripts/validate_continuity.py examples/mie-men-zhi-ye/shots.json
       - name: Ensure all 21 skills use independent views
