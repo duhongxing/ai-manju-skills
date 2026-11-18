@@ -1,0 +1,39 @@
+{
+  "character_id": "SC-LI-001",
+  "master_version": "v1",
+  "master_file": "master.png",
+  "dna": {
+    "age": 22,
+    "costume": "月白长裙",
+    "hairpin": "白玉簪",
+    "pendant": "白玉佩",
+    "weapon": "长剑与黑色剑鞘"
+  },
+  "views": {
+    "front": "front.png",
+    "side": "side.png",
+    "back": "back.png"
+  },
+  "generation_records": [
+    {
+      "asset_file": "master.png",
+      "master_version": "v1",
+      "status": "not_generated"
+    },
+    {
+      "asset_file": "front.png",
+      "master_version": "v1",
+      "status": "not_generated"
+    },
+    {
+      "asset_file": "side.png",
+      "master_version": "v1",
+      "status": "not_generated"
+    },
+    {
+      "asset_file": "back.png",
+      "master_version": "v1",
+      "status": "not_generated"
+    }
+  ]
+}
