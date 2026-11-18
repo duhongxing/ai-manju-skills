@@ -34,6 +34,6 @@ jobs:
           for f in files:
               s=f.read_text(encoding='utf-8')
               assert '三视图（正面、侧面、背面同排等距排列）' not in s, str(f)
-              assert '独立' in s and '不得拼图' in s, str(f)
+              assert '独立' in s and ('不得拼图' in s or '禁止三视图拼图' in s), str(f)
           print('PASS: 21 genre templates')
           PY
