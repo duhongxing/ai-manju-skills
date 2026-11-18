@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "project_id",
     "character_id",
@@ -10,13 +11,16 @@
   ],
   "properties": {
     "project_id": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "character_id": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "master_version": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "aspect_ratio": {
       "enum": [
@@ -35,15 +39,14 @@
           "id",
           "start",
           "end",
-          "sword_state",
-          "scabbard_location",
           "character_id",
           "master_version",
           "image_file"
         ],
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "start": {
             "type": "number",
@@ -53,6 +56,24 @@
             "type": "number",
             "exclusiveMinimum": 0
           },
+          "character_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "master_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "image_file": {
+            "type": "string",
+            "minLength": 1
+          },
+          "props": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/prop"
+            }
+          },
           "sword_state": {
             "enum": [
               "sheathed",
@@ -61,20 +82,42 @@
             ]
           },
           "scabbard_location": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "scabbard_move_action": {
-            "type": "string"
-          },
-          "character_id": {
-            "type": "string"
-          },
-          "master_version": {
-            "type": "string"
-          },
-          "image_file": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "prop": {
+      "type": "object",
+      "required": [
+        "state",
+        "location"
+      ],
+      "properties": {
+        "state": {
+          "type": "string",
+          "minLength": 1
+        },
+        "location": {
+          "type": "string",
+          "minLength": 1
+        },
+        "transition_action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "holder": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     }
