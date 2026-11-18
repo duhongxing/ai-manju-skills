@@ -1,42 +1,115 @@
 #!/usr/bin/env python3
-"""Validate structured shot metadata only; does not inspect image/video pixels."""
-import json, math, sys
+"""Validate shot metadata. Does not inspect generated image or video pixels."""
+import json
+import math
+import sys
 from pathlib import Path
-ALLOWED = {"sheathed":{"sheathed","partially_drawn"},"partially_drawn":{"partially_drawn","drawn","sheathed"},"drawn":{"drawn","partially_drawn"}}
+
+SWORD = {
+    "sheathed": {"sheathed", "partially_drawn"},
+    "partially_drawn": {"sheathed", "partially_drawn", "drawn"},
+    "drawn": {"drawn", "partially_drawn"},
+}
+
+def nonempty(value):
+    return isinstance(value, str) and bool(value.strip())
+
+def finite_number(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
 def validate(data):
-    if not isinstance(data,dict): return ["root must be an object"]
-    shots=data.get("shots")
-    if not isinstance(shots,list) or not shots: return ["shots must be a nonempty array"]
-    errors=[]; ids=set(); images=set(); previous=None
-    for key in ("project_id","character_id","master_version","aspect_ratio"):
-        if not isinstance(data.get(key),str) or not data[key].strip(): errors.append("invalid root "+key)
-    for i,s in enumerate(shots):
-        if not isinstance(s,dict): errors.append("shot must be object"); previous=None; continue
-        sid=s.get("id")
-        if not isinstance(sid,str) or not sid.strip(): errors.append("invalid shot id")
-        if sid in ids: errors.append("duplicate shot id")
-        ids.add(sid)
-        for key in ("character_id","master_version","scabbard_location"):
-            if not isinstance(s.get(key),str) or not s[key].strip(): errors.append(str(sid)+": invalid "+key)
-        for key in ("character_id","master_version"):
-            if s.get(key)!=data.get(key): errors.append(str(sid)+": "+key+" mismatch")
-        img=s.get("image_file")
-        if not isinstance(img,str) or not img.strip(): errors.append(str(sid)+": invalid image_file")
-        elif img in images: errors.append("duplicate image_file")
-        else: images.add(img)
-        st=s.get("sword_state")
-        if st not in ALLOWED: errors.append(str(sid)+": unknown sword state")
-        a,b=s.get("start"),s.get("end")
-        valid=all(isinstance(v,(int,float)) and not isinstance(v,bool) and math.isfinite(v) for v in (a,b))
-        if not valid or a<0 or b<=a: errors.append(str(sid)+": invalid time")
-        if previous:
-            pe=previous.get("end")
-            if valid and isinstance(pe,(int,float)) and not isinstance(pe,bool) and math.isfinite(pe) and abs(pe-a)>1e-6: errors.append(str(sid)+": timeline gap/overlap")
-            if st not in ALLOWED.get(previous.get("sword_state"),set()): errors.append(str(sid)+": invalid sword transition")
-            if s.get("scabbard_location")!=previous.get("scabbard_location") and not s.get("scabbard_move_action"): errors.append(str(sid)+": unexplained scabbard movement")
-        previous=s
+    errors = []
+    if not isinstance(data, dict):
+        return ["root: expected object"]
+    shots = data.get("shots")
+    if not isinstance(shots, list) or not shots:
+        return ["shots: expected nonempty array"]
+    for key in ("project_id", "character_id", "master_version"):
+        if not nonempty(data.get(key)):
+            errors.append("root: invalid " + key)
+    if data.get("aspect_ratio") not in ("9:16", "16:9", "3:4", "1:1"):
+        errors.append("root: invalid aspect_ratio")
+    seen_ids, seen_images = set(), set()
+    previous = None
+    for index, shot in enumerate(shots):
+        tag = f"shot[{index}]"
+        if not isinstance(shot, dict):
+            errors.append(tag + ": expected object")
+            previous = None
+            continue
+        sid = shot.get("id")
+        if not nonempty(sid):
+            errors.append(tag + ": invalid id")
+        elif sid in seen_ids:
+            errors.append(tag + ": duplicate id")
+        else:
+            seen_ids.add(sid)
+        for key in ("character_id", "master_version"):
+            if not nonempty(shot.get(key)):
+                errors.append(tag + ": invalid " + key)
+            elif shot[key] != data.get(key):
+                errors.append(tag + ": " + key + " mismatch")
+        image = shot.get("image_file")
+        if not nonempty(image):
+            errors.append(tag + ": invalid image_file")
+        elif image in seen_images:
+            errors.append(tag + ": duplicate image_file")
+        else:
+            seen_images.add(image)
+        start, end = shot.get("start"), shot.get("end")
+        times_ok = finite_number(start) and finite_number(end)
+        if not times_ok or start < 0 or end <= start:
+            errors.append(tag + ": invalid time")
+        props = shot.get("props", {})
+        if not isinstance(props, dict):
+            errors.append(tag + ": invalid props")
+            props = {}
+        # Backward compatibility with the original sword/scabbard fields.
+        if "sword_state" in shot or "scabbard_location" in shot:
+            props = dict(props)
+            sword = props.setdefault("sword", {})
+            if not isinstance(sword, dict):
+                errors.append(tag + ": invalid sword prop")
+            else:
+                if "sword_state" in shot:
+                    sword.setdefault("state", shot["sword_state"])
+                if "scabbard_location" in shot:
+                    sword.setdefault("location", shot["scabbard_location"])
+                if "scabbard_move_action" in shot:
+                    sword.setdefault("transition_action", shot["scabbard_move_action"])
+        for pid, prop in props.items():
+            if not nonempty(pid) or not isinstance(prop, dict):
+                errors.append(tag + ": invalid prop entry")
+                continue
+            if not nonempty(prop.get("state")):
+                errors.append(tag + ": invalid prop state: " + pid)
+            if not nonempty(prop.get("location")):
+                errors.append(tag + ": invalid prop location: " + pid)
+        if previous is not None:
+            old_shot, old_props = previous
+            prev_end = old_shot.get("end")
+            if times_ok and finite_number(prev_end) and abs(start - prev_end) > 1e-6:
+                errors.append(tag + ": timeline gap/overlap")
+            for pid, prop in props.items():
+                if not isinstance(prop, dict) or not isinstance(old_props.get(pid), dict):
+                    continue
+                old = old_props[pid]
+                if pid == "sword" and old.get("state") in SWORD and prop.get("state") not in SWORD[old["state"]]:
+                    errors.append(tag + ": invalid sword transition")
+                if old.get("location") != prop.get("location") and not nonempty(prop.get("transition_action")):
+                    errors.append(tag + ": unexplained prop movement: " + pid)
+        previous = (shot, props)
     return errors
-if __name__=="__main__":
-    errors=validate(json.loads(Path(sys.argv[1]).read_text(encoding="utf-8")))
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: validate_continuity.py shots.json", file=sys.stderr)
+        sys.exit(2)
+    try:
+        data = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+        errors = validate(data)
+    except (OSError, ValueError) as exc:
+        print("Input error: " + str(exc), file=sys.stderr)
+        sys.exit(2)
     print("\n".join(errors) if errors else "PASS: metadata only")
-    sys.exit(bool(errors))
+    sys.exit(1 if errors else 0)
