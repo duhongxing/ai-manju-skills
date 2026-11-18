@@ -5,7 +5,8 @@
     "character_id",
     "master_version",
     "dna",
-    "views"
+    "views",
+    "master_file"
   ],
   "properties": {
     "character_id": {
@@ -47,6 +48,11 @@
         }
       },
       "additionalProperties": false
+    },
+    "master_file": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
     }
   },
   "additionalProperties": false
