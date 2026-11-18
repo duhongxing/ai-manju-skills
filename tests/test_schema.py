@@ -32,5 +32,18 @@ class ShotSchemaTests(unittest.TestCase):
     def test_blank_character_rejected(self):
         d=copy.deepcopy(SAMPLE);d["character_id"]=""
         self.assertTrue(list(VALIDATOR.iter_errors(d)))
+    def test_whitespace_transition_action_rejected(self):
+        d=copy.deepcopy(SAMPLE)
+        d["shots"][1]["props"]={"book":{"state":"open","location":"desk","transition_action":"   "}}
+        self.assertTrue(list(VALIDATOR.iter_errors(d)))
+    def test_boolean_time_rejected(self):
+        d=copy.deepcopy(SAMPLE);d["shots"][0]["start"]=True
+        self.assertTrue(list(VALIDATOR.iter_errors(d)))
+    def test_generic_prop_valid(self):
+        d=copy.deepcopy(SAMPLE)
+        for shot in d["shots"]:
+            shot.pop("sword_state");shot.pop("scabbard_location")
+            shot["props"]={"book":{"state":"closed","location":"desk"}}
+        self.assertEqual(list(VALIDATOR.iter_errors(d)),[])
 if __name__ == "__main__":
     unittest.main()
