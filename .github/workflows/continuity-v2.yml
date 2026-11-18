@@ -35,6 +35,19 @@ jobs:
           Draft202012Validator(schema).validate(data)
           print('PASS: JSON Schema')
           PY
+      - name: Validate character example and schema
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from jsonschema import Draft202012Validator
+          from scripts.validate_character import validate_character
+          data=json.loads(Path('examples/mie-men-zhi-ye/character.json').read_text(encoding='utf-8'))
+          schema=json.loads(Path('schemas/character.schema.json').read_text(encoding='utf-8'))
+          Draft202012Validator(schema).validate(data)
+          assert validate_character(data)==[], validate_character(data)
+          print('PASS: character asset metadata only')
+          PY
       - name: Character asset reference tests
         run: python -m unittest discover -s tests -p 'test_character.py' -v
       - name: Unit tests
