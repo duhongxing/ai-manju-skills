@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "prop_id",
+    "state",
+    "location"
+  ],
+  "properties": {
+    "prop_id": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "holder": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "transition_action": {
+      "type": "string"
+    }
+  }
+}
