@@ -28,5 +28,21 @@ class CharacterTests(unittest.TestCase):
     def test_non_object_views(self):
         d=copy.deepcopy(BASE);d["views"]=[]
         self.assertIn("character: invalid views", validate_character(d))
+    def test_current_approved_record(self):
+        d=copy.deepcopy(BASE)
+        d["generation_records"]=[{"asset_file":"front.png","master_version":"v1","status":"approved"}]
+        self.assertEqual(validate_character(d),[])
+    def test_stale_approved_record(self):
+        d=copy.deepcopy(BASE)
+        d["generation_records"]=[{"asset_file":"front.png","master_version":"v0","status":"approved"}]
+        self.assertIn("record[0]: stale approved asset",validate_character(d))
+    def test_old_pending_record_allowed(self):
+        d=copy.deepcopy(BASE)
+        d["generation_records"]=[{"asset_file":"front.png","master_version":"v0","status":"review_pending"}]
+        self.assertEqual(validate_character(d),[])
+    def test_unreferenced_asset_record(self):
+        d=copy.deepcopy(BASE)
+        d["generation_records"]=[{"asset_file":"unknown.png","master_version":"v1","status":"approved"}]
+        self.assertIn("record[0]: unreferenced asset_file",validate_character(d))
 if __name__ == "__main__":
     unittest.main()
