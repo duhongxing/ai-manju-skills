@@ -96,6 +96,8 @@ def validate(data):
                 old = old_props[pid]
                 if pid == "sword" and isinstance(old.get("state"), str) and old["state"] in SWORD and (not isinstance(prop.get("state"), str) or prop["state"] not in SWORD[old["state"]]):
                     errors.append(tag + ": invalid sword transition")
+                if pid != "sword" and old.get("state") != prop.get("state") and not nonempty(prop.get("transition_action")):
+                    errors.append(tag + ": unexplained prop state change: " + pid)
                 if old.get("location") != prop.get("location") and not nonempty(prop.get("transition_action")):
                     errors.append(tag + ": unexplained prop movement: " + pid)
         previous = (shot, props)
