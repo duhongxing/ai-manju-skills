@@ -35,6 +35,8 @@ jobs:
           Draft202012Validator(schema).validate(data)
           print('PASS: JSON Schema')
           PY
+      - name: Character asset reference tests
+        run: python -m unittest discover -s tests -p 'test_character.py' -v
       - name: Unit tests
         run: python -m unittest discover -s tests -p 'test_*.py' -v
       - name: Sample continuity validation
