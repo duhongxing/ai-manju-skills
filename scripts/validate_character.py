@@ -32,6 +32,29 @@ def validate_character(data):
             errors.append("character: duplicate image reference " + key + " and " + seen[name])
         else:
             seen[name] = key
+    records = data.get("generation_records", [])
+    if not isinstance(records, list):
+        errors.append("character: invalid generation_records")
+        return errors
+    referenced = {name for _, name in files}
+    for index, record in enumerate(records):
+        tag = f"record[{index}]"
+        if not isinstance(record, dict):
+            errors.append(tag + ": expected object")
+            continue
+        asset = record.get("asset_file")
+        version = record.get("master_version")
+        status = record.get("status")
+        if not isinstance(asset, str) or not asset.strip() or asset.strip() not in referenced:
+            errors.append(tag + ": unreferenced asset_file")
+        if not isinstance(version, str) or not version.strip():
+            errors.append(tag + ": invalid master_version")
+        elif version != data.get("master_version") and status == "approved":
+            errors.append(tag + ": stale approved asset")
+        if status not in ("not_generated", "generated", "review_pending", "approved", "rejected"):
+            errors.append(tag + ": invalid status")
+        if status == "approved" and asset == data.get("master_file") and version != data.get("master_version"):
+            errors.append(tag + ": master version mismatch")
     return errors
 
 if __name__ == "__main__":
