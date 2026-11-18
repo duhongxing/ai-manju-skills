@@ -53,4 +53,25 @@ class ContinuityTests(unittest.TestCase):
     def test_specific_error_code(self):
         d=copy.deepcopy(BASE);d["shots"][1]["image_file"]="S01.png"
         self.assertIn("shot[1]: duplicate image_file",validate(d))
+    def test_root_array(self):
+        self.assertEqual(validate([]), ["root: expected object"])
+    def test_shot_array(self):
+        d=copy.deepcopy(BASE);d["shots"][1]=[]
+        self.assertIn("shot[1]: expected object",validate(d))
+    def test_unhashable_id(self):
+        d=copy.deepcopy(BASE);d["shots"][1]["id"]=[]
+        self.assertIn("shot[1]: invalid id",validate(d))
+    def test_unhashable_image(self):
+        d=copy.deepcopy(BASE);d["shots"][1]["image_file"]=[]
+        self.assertIn("shot[1]: invalid image_file",validate(d))
+    def test_invalid_props_container(self):
+        d=copy.deepcopy(BASE);d["shots"][1]["props"]=[]
+        self.assertIn("shot[1]: invalid props",validate(d))
+    def test_invalid_aspect_ratio(self):
+        d=copy.deepcopy(BASE);d["aspect_ratio"]="5:4"
+        self.assertIn("root: invalid aspect_ratio",validate(d))
+    def test_empty_movement_action(self):
+        d=copy.deepcopy(BASE);d["shots"][1]["scabbard_location"]="right_waist"
+        d["shots"][1]["scabbard_move_action"]=" "
+        self.assertIn("shot[1]: unexplained prop movement: sword",validate(d))
 if __name__=="__main__": unittest.main()
