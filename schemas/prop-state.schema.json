@@ -8,13 +8,19 @@
   ],
   "properties": {
     "prop_id": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
     },
     "state": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
     },
     "location": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
     },
     "holder": {
       "type": [
@@ -23,7 +29,10 @@
       ]
     },
     "transition_action": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
     }
-  }
+  },
+  "additionalProperties": false
 }
