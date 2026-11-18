@@ -10,6 +10,7 @@ on:
       - '.github/workflows/continuity-v2.yml'
   push:
     branches:
+      - 'main'
       - 'feature/continuity-v2'
 jobs:
   metadata-tests:
