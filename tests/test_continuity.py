@@ -74,4 +74,19 @@ class ContinuityTests(unittest.TestCase):
         d=copy.deepcopy(BASE);d["shots"][1]["scabbard_location"]="right_waist"
         d["shots"][1]["scabbard_move_action"]=" "
         self.assertIn("shot[1]: unexplained prop movement: sword",validate(d))
+    def test_generic_state_change_requires_action(self):
+        d=copy.deepcopy(BASE)
+        for shot in d["shots"]:
+            shot.pop("sword_state"); shot.pop("scabbard_location")
+            shot["props"]={"book":{"state":"closed","location":"desk"}}
+        d["shots"][1]["props"]["book"]["state"]="open"
+        self.assertIn("shot[1]: unexplained prop state change: book",validate(d))
+    def test_generic_state_change_with_action(self):
+        d=copy.deepcopy(BASE)
+        for shot in d["shots"]:
+            shot.pop("sword_state"); shot.pop("scabbard_location")
+            shot["props"]={"book":{"state":"closed","location":"desk"}}
+        d["shots"][1]["props"]["book"].update(state="open",transition_action="opens the book")
+        d["shots"][2]["props"]["book"]["state"]="open"
+        self.assertEqual(validate(d),[])
 if __name__=="__main__": unittest.main()
