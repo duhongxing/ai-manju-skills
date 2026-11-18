@@ -28,4 +28,29 @@ class ContinuityTests(unittest.TestCase):
         d=copy.deepcopy(BASE);d["shots"][1]["end"]=2;self.assertTrue(validate(d))
     def test_unknown_state(self):
         d=copy.deepcopy(BASE);d["shots"][1]["sword_state"]="floating";self.assertTrue(validate(d))
+    def test_unhashable_state_returns_error(self):
+        d=copy.deepcopy(BASE);d["shots"][1]["sword_state"]=[]
+        self.assertIn("shot[1]: invalid prop state: sword",validate(d))
+    def test_invalid_location_type_returns_error(self):
+        d=copy.deepcopy(BASE);d["shots"][1]["scabbard_location"]=[]
+        self.assertIn("shot[1]: invalid prop location: sword",validate(d))
+    def test_generic_non_sword_story(self):
+        d=copy.deepcopy(BASE)
+        for shot in d["shots"]:
+            shot.pop("sword_state");shot.pop("scabbard_location")
+            shot["props"]={"book":{"state":"closed","location":"desk"}}
+        self.assertEqual(validate(d),[])
+    def test_generic_prop_movement(self):
+        d=copy.deepcopy(BASE)
+        for shot in d["shots"]:
+            shot.pop("sword_state");shot.pop("scabbard_location")
+            shot["props"]={"book":{"state":"closed","location":"desk"}}
+        d["shots"][1]["props"]["book"]["location"]="shelf"
+        self.assertIn("shot[1]: unexplained prop movement: book",validate(d))
+    def test_non_object_prop(self):
+        d=copy.deepcopy(BASE);d["shots"][1]["props"]={"book":[]}
+        self.assertIn("shot[1]: invalid prop entry",validate(d))
+    def test_specific_error_code(self):
+        d=copy.deepcopy(BASE);d["shots"][1]["image_file"]="S01.png"
+        self.assertIn("shot[1]: duplicate image_file",validate(d))
 if __name__=="__main__": unittest.main()
